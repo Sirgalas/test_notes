@@ -28,7 +28,7 @@ services:
                 nginx_image: ${NGINX_IMAGE}
         environment:
             APP_DIR: ${APP_DIR}
-        depends_on: [ postgres, frontend, backend ]
+        depends_on: [ postgres, notes ]
         networks: [ internal ]
         ports: [ "${HTTP_PORT}:80" ]
         volumes:
@@ -54,7 +54,7 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
-    frontend:
+    notes:
         build:
             context: ./docker
             dockerfile: dev/php-fpm/php-fpm.dockerfile
@@ -64,51 +64,11 @@ services:
                 user: ${USER}
                 uid: ${UID}
         <<: *php-config
-        working_dir: /var/www/frontend
+        working_dir: /var/www/
         volumes:
             - ./app:${APP_DIR}
         extra_hosts:
             - host.docker.internal:host-gateway
-    backend:
-        build:
-            context: ./docker
-            dockerfile: dev/php-fpm/php-fpm.dockerfile
-            args:
-                php_fpm_image: ${PHP_FPM_IMAGE}
-                app_dir: ${APP_DIR}
-                user: ${USER}
-                uid: ${UID}
-        <<: *php-config
-        working_dir: /var/www/backend
-        volumes:
-            - ./app:${APP_DIR}
-        extra_hosts:
-            - host.docker.internal:host-gateway
-    consumer:
-        build:
-            context: ./docker
-            dockerfile: dev/consumer/consumer.dockerfile
-            args:
-                php_cli_image: ${PHP_CLI_IMAGE}
-                app_dir: ${APP_DIR}
-                user: ${USER}
-                uid: ${UID}
-        <<: *php-config
-        volumes:
-            - ./app:${APP_DIR}:rw
-    cron:
-        build:
-            context: ./docker
-            dockerfile: dev/cron/cron.dockerfile
-            args:
-                php_fpm_image: ${PHP_FPM_IMAGE}
-                app_dir: ${APP_DIR}
-        <<: *php-config
-        volumes:
-            - ./docker/common/cron/periodic:/etc/periodic:ro
-            - ./docker/common/cron/startup.sh:/usr/local/startup.sh:ro
-            - ./app:${APP_DIR}:cached
-        command: /usr/local/startup.sh
     php-cli:
         build:
             context: ./docker
@@ -121,18 +81,7 @@ services:
         <<: *php-config
         volumes:
             - ./app:${APP_DIR}
-    rabbitmq:
-        build:
-            context: ./docker
-            dockerfile: dev/rabbitmq/rabbit.dockerfile
-            args:
-                rabbitmq_image: ${RABBITMQ_IMAGE}
-        environment:
-            RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST}
-            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-        networks: [ internal ]
-        ports: [ "${RABBITMQ_PORT}:5672", "${RABBITMQ_MANAGE_PORT}:15672" ]
+
 
 networks:
     internal:
