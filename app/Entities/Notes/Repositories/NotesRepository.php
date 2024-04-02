@@ -33,6 +33,14 @@ class NotesRepository
         return $notes;
     }
 
+    public function findOneByQuery(array $query): Notes
+    {
+        if(!$notes = Notes::findOne($query)) {
+            throw new NotFoundHttpException('Notes not find');
+        }
+        return $notes;
+    }
+
     public function delete(int $id)
     {
         $notes = $this->get($id);

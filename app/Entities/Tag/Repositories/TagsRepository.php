@@ -39,4 +39,14 @@ class TagsRepository
         $tags = $this->get($id);
         $tags->delete();
     }
+
+    public function getAllByQuery(array $query = []): array
+    {
+        $tags = Tags::find();
+        if(!empty($query)) {
+            $tags->where($query);
+        }
+        return $tags->all();
+    }
+
 }

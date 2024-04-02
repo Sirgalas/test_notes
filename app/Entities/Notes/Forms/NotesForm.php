@@ -7,23 +7,26 @@ namespace app\Entities\Notes\Forms;
 use app\Entities\Notes\Entities\Notes;
 use dektrium\user\models\User;
 use yii\base\Model;
+use yii\helpers\ArrayHelper;
 
 class NotesForm extends Model
 {
 
-    public int $id;
-    public string $name;
-    public int $user_id;
-    public string $comment;
+    public ?int $id = null;
+    public ?string $name = null;
+    public ?int $user_id = null;
+    public ?string $comment = null;
+    public array $tags = [];
 
     public function __construct(Notes $notes = null, $config = [])
     {
+        $this->user_id = \Yii::$app->user->identity->id;
         parent::__construct($config);
         if($notes) {
             $this->id = $notes->id;
             $this->name = $notes->name;
-            $this->user_id = $notes->user_id;
             $this->comment = $notes->comment;
+            $this->tags = ArrayHelper::getColumn($notes->tags,'id');
         }
     }
 
@@ -37,6 +40,9 @@ class NotesForm extends Model
             [['user_id'], 'integer'],
             [['comment'], 'string'],
             [['name'], 'string', 'max' => 255],
+            [
+                ['tags'],'each','rule' => ['integer']
+            ],
             [
                 ['user_id'],
                 'exist',

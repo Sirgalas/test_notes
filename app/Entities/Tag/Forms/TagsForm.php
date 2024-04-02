@@ -9,7 +9,7 @@ use yii\base\Model;
 
 class TagsForm extends Model
 {
-    public string $name;
+    public ?string $name = null;
 
     public function __construct(Tags $tags = null, $config = [])
     {

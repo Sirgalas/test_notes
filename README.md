@@ -1,0 +1,2 @@
+для авторизации через соц сети надо client.php.dist переименовать в client.php  и поставить 'CLIENT_ID' и 'CLIENT_SECRET' 
+можно до делать urlManager и организовать поиск в index по названию тега через Select2

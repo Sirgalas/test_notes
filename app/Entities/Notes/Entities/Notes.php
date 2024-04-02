@@ -3,7 +3,9 @@
 namespace app\Entities\Notes\Entities;
 
 use app\Entities\Notes\Forms\NotesForm;
+use app\Entities\Tag\Entities\Tags;
 use dektrium\user\models\User;
+use lhs\Yii2SaveRelationsBehavior\SaveRelationsBehavior;
 use Yii;
 use yii\db\ActiveQuery;
 
@@ -16,7 +18,7 @@ use yii\db\ActiveQuery;
  * @property string|null $comment
  *
  * @property NotesToTags[] $notesToTags
- * @property Notes[] $notes
+ * @property Tags[] $tags
  * @property User $user
  */
 class Notes extends \yii\db\ActiveRecord
@@ -24,7 +26,6 @@ class Notes extends \yii\db\ActiveRecord
     public static function create(NotesForm $form): self
     {
         $notes = new static();
-        $notes->id = $form->id;
         $notes->name = $form->name;
         $notes->user_id = $form->user_id;
         $notes->comment = $form->comment;
@@ -39,6 +40,19 @@ class Notes extends \yii\db\ActiveRecord
         $this->comment = $form->comment;
     }
 
+    public function behaviors():array
+    {
+        $behaviorArray =[
+            'saveRelations' =>[
+                'class' => SaveRelationsBehavior::class,
+                'relations' => [
+                    'tags'
+                ],
+            ],
+        ];
+        return array_merge(parent::behaviors(), $behaviorArray);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -47,9 +61,9 @@ class Notes extends \yii\db\ActiveRecord
         return 'notes';
     }
 
-    public function getNotes(): ActiveQuery
+    public function getTags(): ActiveQuery
     {
-        return $this->hasMany(Notes::class,['id' => 'notes_id'])->via('notesToTags');
+        return $this->hasMany(Tags::class,['id' => 'tag_id'])->via('notesToTags');
     }
 
 
@@ -61,5 +75,22 @@ class Notes extends \yii\db\ActiveRecord
     public function getUser(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'user_id']);
+    }
+
+    public function addTags(Tags $tags)
+    {
+        $oldTags = $this->tags;
+        $oldTags[] = $tags;
+        $this->updateTags($oldTags);
+    }
+
+    public function removeAllTags()
+    {
+        $this->updateTags([]);
+    }
+
+    public function updateTags(array $tags): void
+    {
+        $this->tags = $tags;
     }
 }
